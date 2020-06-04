@@ -65,7 +65,7 @@ const addImagesToCache = async (page = 1) => {
     });
 
     if (result.body.hasMore) {
-        addImagesToCache(page + 1);
+        await addImagesToCache(page + 1);
     } else {
         logger.info(`Done loading cache. Size: ${Object.keys(idToPicture).length} objects.`);
         attrKeywords = Object.keys(attrToId);
@@ -98,10 +98,9 @@ const search = (searchTerm = '') => {
         return arr;
     }, []);
 
-    const result = [];
     found.forEach(key => attrToId[key].forEach(id => uniqueIdMap[id] = idToPicture[id]));
     return Object.values(uniqueIdMap);
-}
+};
 
 module.exports = {
     loadImages,

@@ -10,18 +10,22 @@ const { search } = require('./routes');
 app.use('/search', search);
 app.use(errorHandler);
 
-app.listen(config.PORT, () => logger.info(`Listening at http://localhost:${config.PORT}`));
+let isStarting = true;
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const scheduleNextLoadImages = async () => {
+const scheduleNextImagesLoad = async () => {
     await loadImages();
+    if (isStarting) {
+        isStarting = false;
+        app.listen(config.PORT, () => logger.info(`Listening at http://localhost:${config.PORT}`));
+    }
     await delay(config.CACHE_RELOAD_PERIOD);
-    await scheduleNextLoadImages();
+    await scheduleNextImagesLoad();
 };
 
 const main = async () => {
-    await scheduleNextLoadImages();
+    await scheduleNextImagesLoad();
 };
 
 main().catch((e) => {
