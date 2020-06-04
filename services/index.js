@@ -1,7 +1,5 @@
-const search = require('./search');
-const cacheLoader = require('./cache-loader');
+const imagesCache = require('./images-cache');
 
 module.exports = {
-    search,
-    cacheLoader
+    imagesCache
 };

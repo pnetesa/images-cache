@@ -1,6 +1,6 @@
 const { logger } = require('./utils');
 const config = require('./config');
-const { cacheLoader: { loadImages } } = require('./services');
+const { imagesCache: { loadImages } } = require('./services');
 
 const express = require('express');
 const app = express();

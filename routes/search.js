@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { search } = require('../services');
+const { search } = require('../middleware');
 
 router.route('/:searchTerm')
     .get(search);
