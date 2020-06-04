@@ -1,12 +1,14 @@
 const { logger } = require('./utils');
 const config = require('./config');
 const { imagesCache: { loadImages } } = require('./services');
+const { errorHandler } = require('./middleware');
 
 const express = require('express');
 const app = express();
 
 const { search } = require('./routes');
 app.use('/search', search);
+app.use(errorHandler);
 
 app.listen(config.PORT, () => logger.info(`Listening at http://localhost:${config.PORT}`));
 
