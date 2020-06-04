@@ -1,0 +1,22 @@
+{
+  "name": "images-cache",
+  "version": "1.0.0",
+  "description": "Provides users with the possibility to search stored images based on attribute fields.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pnetesa/images-cache.git"
+  },
+  "author": "Pavel Netesa",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pnetesa/images-cache/issues"
+  },
+  "homepage": "https://github.com/pnetesa/images-cache#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
