@@ -3,9 +3,8 @@ const config = require('../config');
 const { url } = config;
 
 let token = null;
-let idToPicture = null;
-let attrToId = null;
-let attrKeywords = null;
+const idToPicture = new Map();
+const attrToId = new Map();
 
 const getToken = async () => {
     const result = await post(url.AUTH, { 'apiKey': config.API_KEY });
@@ -45,10 +44,12 @@ const addId = (map, key, id) => {
         return;
     }
 
-    if (map[key]) {
-        map[key.toLowerCase()].push(id);
+    const $key = key.toLowerCase();
+
+    if (map.has($key)) {
+        map.get($key).push(id);
     } else {
-        map[key.toLowerCase()] = [id];
+        map.set($key.toLowerCase(), [id]);
     }
 };
 
@@ -58,7 +59,7 @@ const addImagesToCache = async (page = 1) => {
 
     imagesDetails.forEach(({ body }) => {
         const { id, author, camera, tags } = body;
-        idToPicture[id] = body;
+        idToPicture.set(id, body);
         addId(attrToId, author, id);
         addId(attrToId, camera, id);
         tags.split('#').forEach(tag => addId(attrToId, tag.trim(), id));
@@ -67,39 +68,37 @@ const addImagesToCache = async (page = 1) => {
     if (result.body.hasMore) {
         await addImagesToCache(page + 1);
     } else {
-        logger.info(`Done loading cache. Size: ${Object.keys(idToPicture).length} objects.`);
-        attrKeywords = Object.keys(attrToId);
+        logger.info(`Done loading cache. Size: ${idToPicture.size} objects.`);
     }
 };
 
 const loadImages = async () => {
     logger.info('Loading cache...');
     // Invalidate cache
-    idToPicture = {};
-    attrToId = {};
-    attrKeywords = [];
+    idToPicture.clear();
+    attrToId.clear();
     await addImagesToCache();
 };
 
 const search = (searchTerm = '') => {
-    const uniqueIdMap = {};
+    const uniqueIdMap = new Map();
 
     const searchKey = searchTerm.toLowerCase();
-    if (attrToId[searchKey]) {
-        const pictureIds = attrToId[searchKey];
-        pictureIds.forEach(pictureId => uniqueIdMap[pictureId] = idToPicture[pictureId]);
-        return Object.values(uniqueIdMap);
+    const pictureIds = attrToId.get(searchKey);
+    if (pictureIds) {
+        pictureIds.forEach(pictureId => uniqueIdMap.set(pictureId, idToPicture.get(pictureId)));
+        return Array.from(uniqueIdMap.values());
     }
-    // No full match, perform substring scan...
-    const found = attrKeywords.reduce((arr, keyword) => {
-        if (keyword.includes(searchKey)) {
-            arr.push(keyword);
-        }
-        return arr;
-    }, []);
 
-    found.forEach(key => attrToId[key].forEach(id => uniqueIdMap[id] = idToPicture[id]));
-    return Object.values(uniqueIdMap);
+    // No full match, perform substring scan...
+    for (let keyword of attrToId.keys()) {
+        if (keyword.includes(searchKey)) {
+            attrToId.get(keyword)
+                .forEach(id => uniqueIdMap.set(id, idToPicture.get(id)));
+        }
+    }
+
+    return Array.from(uniqueIdMap.values());
 };
 
 module.exports = {

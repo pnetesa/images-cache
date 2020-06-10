@@ -36,4 +36,5 @@ main().catch((e) => {
 process.on("uncaughtException", (e) => {
     logger.error("CAUGHT IN uncaughtException");
     logger.error(e);
+    process.exit(1);
 });
