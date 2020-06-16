@@ -3,8 +3,8 @@ const config = require('../config');
 const { url } = config;
 
 let token = null;
-const idToPicture = new Map();
-const attrToId = new Map();
+let idToPicture = new Map();
+let attrToId = new Map();
 
 const getToken = async () => {
     const result = await post(url.AUTH, { 'apiKey': config.API_KEY });
@@ -74,10 +74,18 @@ const addImagesToCache = async (page = 1) => {
 
 const loadImages = async () => {
     logger.info('Loading cache...');
-    // Invalidate cache
-    idToPicture.clear();
-    attrToId.clear();
+    idToPicture = new Map();
+    attrToId = new Map();
     await addImagesToCache();
+};
+
+const getCacheData = () => ({ idToPicture, attrToId });
+
+const setCacheData = (cacheData) => {
+    // idToPicture = cacheData.idToPicture;
+    // attrToId = cacheData.attrToId;
+    idToPicture = new Map(cacheData.idToPicture);
+    attrToId = new Map(cacheData.attrToId);
 };
 
 const search = (searchTerm = '') => {
@@ -103,5 +111,7 @@ const search = (searchTerm = '') => {
 
 module.exports = {
     loadImages,
+    getCacheData,
+    setCacheData,
     search
 };

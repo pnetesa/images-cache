@@ -1,7 +1,8 @@
 const { logger } = require('./utils');
 const config = require('./config');
-const { imagesCache: { loadImages } } = require('./services');
+const { imagesCache: { setCacheData } } = require('./services');
 const { errorHandler } = require('./middleware');
+const { fork } = require('child_process');
 
 const express = require('express');
 const app = express();
@@ -15,13 +16,23 @@ let isStarting = true;
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const scheduleNextImagesLoad = async () => {
-    await loadImages();
+    const forked = fork('cache-loader.js');
+
+    await new Promise((resolve) => {
+        forked.on('message', (msg) => {
+            setCacheData(msg.cacheData);
+            resolve();
+        });
+    });
+
     if (isStarting) {
         isStarting = false;
         app.listen(config.PORT, () => logger.info(`Listening at http://localhost:${config.PORT}`));
     }
+
     await delay(config.CACHE_RELOAD_PERIOD);
     await scheduleNextImagesLoad();
+
 };
 
 const main = async () => {
